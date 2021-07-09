@@ -20,11 +20,11 @@ Future Spec Features:
 Create a new ASP.NET project and initialize the git repository. Then, checkout this repository as a submodule.
 
 ```shell
-$ mkdir rest-schema-api
-$ cd rest-schema-api
-$ dotnet new webapi -o src --name webapi
+$ mkdir rest-schema-demo
+$ cd rest-schema-demo
+$ dotnet new webapi -o src --name rest-schema-demo
 $ git init
-$ git submodule add https://github.com/goncalo-oliveira/rest-schema-aspnet
+$ git submodule add git@github.com:goncalo-oliveira/rest-schema-aspnet.git
 ```
 
 Add a reference on the project and fire up VS Code or any other IDE you prefer.
