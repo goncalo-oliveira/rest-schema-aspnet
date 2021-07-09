@@ -30,7 +30,7 @@ $ git submodule add git@github.com:goncalo-oliveira/rest-schema-aspnet.git
 Add a reference on the project and fire up VS Code or any other IDE you prefer.
 
 ```shell
-$ dotnet add src/rest-schema-api.csproj reference rest-schema-aspnet/src/rest-schema-aspnet.csproj
+$ dotnet add src/rest-schema-demo.csproj reference rest-schema-aspnet/src/rest-schema-aspnet.csproj
 $ code .
 ```
 
