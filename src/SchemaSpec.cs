@@ -1,36 +1,20 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace RestSchema
 {
-    public sealed class SchemaSpec
+    public sealed class SchemaSpec : Dictionary<string, string[]>
     {
-        private readonly Dictionary<string, string[]> source;
-
         public SchemaSpec()
-        {
-            source = new Dictionary<string, string[]>( StringComparer.OrdinalIgnoreCase );
-        }
-
-        public bool Any()
-        {
-            return source.Keys.Any();
-        }
+        : base( StringComparer.OrdinalIgnoreCase )
+        {}
 
         public KeyValuePair<string, string[]> Root()
         {
-            return source.First();
-        }
-
-        public void Add( string specName, string[] properties )
-        {
-            source.Add( specName, properties );
-        }
-
-        public bool ContainsSpec( string specName )
-        {
-            return source.ContainsKey( specName );
+            return this.First();
         }
 
         /// <summary>
@@ -40,7 +24,7 @@ namespace RestSchema
         /// <returns>True if the root spec contains a property with the given name, false otherwise</returns>
         public bool ContainsProperty( string propertyName )
         {
-            return ( source.Values.FirstOrDefault()?.Contains( propertyName, StringComparer.OrdinalIgnoreCase ) == true );
+            return ( Values.FirstOrDefault()?.Contains( propertyName, StringComparer.OrdinalIgnoreCase ) == true );
         }
 
         /// <summary>
@@ -56,7 +40,7 @@ namespace RestSchema
                 return ContainsProperty( propertyName );
             }
 
-            if ( !source.TryGetValue( specName, out var properties ) )
+            if ( !TryGetValue( specName, out var properties ) )
             {
                 // schema not found
                 return ( false );
@@ -71,7 +55,7 @@ namespace RestSchema
         /// <returns>An array containing the schema properties</returns>
         public IEnumerable<string> GetProperties()
         {
-            return source.Values.FirstOrDefault() ?? Enumerable.Empty<string>();
+            return Values.FirstOrDefault() ?? Enumerable.Empty<string>();
         }
 
         /// <summary>
@@ -86,7 +70,7 @@ namespace RestSchema
                 return GetProperties();
             }
 
-            if ( source.TryGetValue( specName, out var properties ) )
+            if ( TryGetValue( specName, out var properties ) )
             {
                 return ( properties );
             }

@@ -9,5 +9,6 @@ namespace RestSchema
 
         // FUTURE spec
         //public const string SchemaFilter = "X-Schema-Filter";
+        public const string SchemaVersion = "X-Schema-Version";
     }
 }

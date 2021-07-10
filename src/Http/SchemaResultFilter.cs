@@ -51,10 +51,7 @@ namespace RestSchema.Http
 
                 foreach ( var item in (IEnumerable)value )
                 {
-                    var json = System.Text.Json.JsonSerializer.Serialize( item );
-                    var dict = System.Text.Json.JsonSerializer.Deserialize<System.Collections.Generic.Dictionary<string, object>>( json );
-
-                    dict = ApplySchemaMapping( schemaMapping, dict );
+                    var dict = ApplySchemaMapping( schemaMapping, item );
 
                     list.Add( dict );
                 }
@@ -64,10 +61,7 @@ namespace RestSchema.Http
             else
             {
                 // single object
-                var json = System.Text.Json.JsonSerializer.Serialize( value );
-                var dict = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>( json );
-
-                dict = ApplySchemaMapping( schemaMapping, dict );
+                var dict = ApplySchemaMapping( schemaMapping, value );
 
                 result.Value = dict;
             }
@@ -75,48 +69,48 @@ namespace RestSchema.Http
             chrono.Stop();
 
             // add Schema headers
-            context.HttpContext.Response.Headers.Add( "X-Schema-Map-Duration", chrono.Elapsed.TotalMilliseconds.ToString() );
-            context.HttpContext.Response.Headers.Add( "X-Schema-Version", SchemaVersion.Value.ToString() );
+            context.HttpContext.Response.Headers.Add( SchemaHeaders.SchemaMapping + "-Duration"
+                , chrono.Elapsed.TotalMilliseconds.ToString() + "ms" );
+
+            context.HttpContext.Response.Headers.Add( SchemaHeaders.SchemaVersion
+                , SchemaVersion.Value.ToString() );
 
             await next();
         }
 
-        private Dictionary<string, object> ApplySchemaMapping( Schema schemaMapping, Dictionary<string, object> item )
+        private Dictionary<string, object> ApplySchemaMapping( Schema schemaMapping, object item )
         {
             return ApplySchemaMapping( schemaMapping, schemaMapping.Spec.Root().Key, item );
         }
 
-        private Dictionary<string, object> ApplySchemaMapping( Schema schemaMapping, string schemaName, Dictionary<string, object> item )
+        private Dictionary<string, object> ApplySchemaMapping( Schema schemaMapping, string schemaName, object item )
         {
-            // TODO: apply schema mapping for property values
+            var dict = new Microsoft.AspNetCore.Routing.RouteValueDictionary( item );
 
             // select only properties that are in the schema
-            var marked = item.Where( x => schemaMapping.Spec.ContainsProperty( schemaName, x.Key ) )
+            var selected = dict.Where( x => schemaMapping.Spec.ContainsProperty( schemaName, x.Key ) )
                 .ToDictionary( x => x.Key, x => x.Value );
 
-            // look for schema mappings for property value
-            var unmapped = marked.Where( x => schemaMapping.Spec.ContainsSpec( x.Key ) 
-                               || schemaMapping.Spec.ContainsSpec( $"{schemaName}.{x.Key}" ) )
+            // look for additional schema mappings for property values
+            var additionalMappings = selected.Where( x => schemaMapping.Spec.ContainsKey( x.Key ) 
+                               || schemaMapping.Spec.ContainsKey( $"{schemaName}.{x.Key}" ) )
                             .ToArray();
 
-            foreach ( var kvp in unmapped )
+            foreach ( var kvp in additionalMappings )
             {
                 // find explicit mapping
                 var valueSchemaName = $"{schemaName}.{kvp.Key}";
-                if ( !schemaMapping.Spec.ContainsSpec( valueSchemaName ) )
+                if ( !schemaMapping.Spec.ContainsKey( valueSchemaName ) )
                 {
                     // we already know a mapping exists, so if not the full name
                     // then it's the simplified name
                     valueSchemaName = kvp.Key;
                 }
 
-                var json = System.Text.Json.JsonSerializer.Serialize( kvp.Value );
-                var dict = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>( json );
-
-                marked[kvp.Key] = ApplySchemaMapping( schemaMapping, valueSchemaName, dict );
+                selected[kvp.Key] = ApplySchemaMapping( schemaMapping, valueSchemaName, kvp.Value );
             }
 
-            return marked;
+            return ( selected );
         }
 
     }

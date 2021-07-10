@@ -41,7 +41,7 @@ public void ConfigureServices( IServiceCollection services )
 {
     services.AddControllers( options =>
     {
-        options.Filters.AddSchemaResultFilter();
+        options.Filters.AddRestSchemaFilters();
     })
     .AddJsonOptions( options =>
     {
