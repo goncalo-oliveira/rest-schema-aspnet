@@ -13,11 +13,35 @@ namespace RestSchema.Http
                 return;
             }
 
+            // TODO: this section requires some refactoring
+            //       to organize the code and making it
+            //       more efficient
+
             if ( !context.HttpContext.Request.Headers.ContainsKey( SchemaHeaders.SchemaMapping ) &&
                  !context.HttpContext.Request.Headers.ContainsKey( SchemaHeaders.SchemaInclude ) )
             {
-                // no schema headers... move on...
-                return;
+                // no schema headers...
+                // look for schema in query string
+                // if found, we add it to the headers
+
+                var queryKey = SchemaQueryKeys.SchemaMapping;
+                if ( !context.HttpContext.Request.Query.ContainsKey( queryKey ) )
+                {
+                    // Schema-Mapping takes precedence, but if not found...
+                    queryKey = SchemaQueryKeys.SchemaInclude;
+                }
+
+                if ( !context.HttpContext.Request.Query.ContainsKey( queryKey  ) )
+                {
+                    // no schema query arguments either... move on
+                    return;
+                }
+
+                context.HttpContext.Request.Headers.Add( 
+                    queryKey.Equals( SchemaQueryKeys.SchemaMapping ) 
+                        ? SchemaHeaders.SchemaMapping
+                        : SchemaHeaders.SchemaInclude
+                        , context.HttpContext.Request.Query[queryKey]  );
             }
 
             // validate schema data on X-Schema-Map and X-Schema-Include
@@ -50,8 +74,7 @@ namespace RestSchema.Http
         }
 
         public void OnResourceExecuted( ResourceExecutedContext context )
-        {
-        }
+        {}
 
         private bool EnsureSchemaVersionIsValid( ResourceExecutingContext context )
         {

@@ -1,12 +1,12 @@
 # RESTful Schema Extensions for ASP.NET
 
-An ASP.NET implementation for the [REST Schema](https://github.com/goncalo-oliveira/rest-schema-spec). This is still a work in progress and it currently implements v0.1 of the spec.
+An ASP.NET implementation for the [REST Schema](https://github.com/goncalo-oliveira/rest-schema-spec) Spec. This is still a work in progress and it currently implements v0.1 of the spec.
 
 Features:
 - [x] Schema-Mapping 
 - [x] Schema-Include
 - [x] Headers
-- [ ] Query string parameters
+- [x] Query string parameters
 - [x] JSON schema
 - [ ] YAML schema
 - [x] Plain text schema
@@ -53,3 +53,28 @@ public void ConfigureServices( IServiceCollection services )
 ```
 
 The `DictionaryKeyPolicy` is important and should match the `PropertyNamingPolicy`. By default, `DictionaryKeyPolicy` is null and that can lead to mixed naming strategies in the results.
+
+## Schema-Include
+
+To handle with the `Schema-Include` you can use the extensions on the `HttpRequest` to verify if a property is to be included. Here's an example to retrieve a user's details and include the user's teams if included in the schema.
+
+```csharp
+public class UserController : ControllerBase
+{
+    ...
+
+    public IActionResult GetUser( int id )
+    {
+        // retrieve the user's details
+        var user = ExampleUserRepository.GetUser( id );
+
+        // include the user's teams
+        if ( Request.SchemaIncludes( "teams" ) )
+        {
+            user.Teams = ExampleTeamRepository.GetUserTeams( id );
+        }
+
+        return Ok( user );
+    }
+}
+```
