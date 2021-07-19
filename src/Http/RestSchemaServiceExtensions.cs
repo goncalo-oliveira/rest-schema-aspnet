@@ -1,4 +1,6 @@
 using System;
+using System.Text.Json;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -17,7 +19,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>An IMvcBuilder that can be used to further configure the MVC services</returns>
         public static IMvcBuilder AddSchemaControllers( this IServiceCollection services )
         {
-            throw new NotImplementedException();
+            return AddSchemaControllers( services, null );
         }
 
         /// <summary>
@@ -27,7 +29,21 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>An IMvcBuilder that can be used to further configure the MVC services</returns>
         public static IMvcBuilder AddSchemaControllers( this IServiceCollection services, Action<MvcOptions> configure )
         {
-            throw new NotImplementedException();
+            var builder = services.AddControllers( options =>
+            {
+                options.Filters.AddRestSchemaFilters();
+
+                configure?.Invoke( options );
+            } );
+
+
+            builder.AddJsonOptions( options =>
+            {
+                options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
+            } );
+
+            return ( builder );
         }
     }
 }

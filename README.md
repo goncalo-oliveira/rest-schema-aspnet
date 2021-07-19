@@ -12,7 +12,7 @@ Features:
 - [x] Plain text schema
 
 Future Spec Features:
-- [ ] Schema-Filter (v0.2?)
+- [ ] Schema filters (v0.2?)
 - [ ] Schema references (v0.2?)
 
 ## Getting Started
@@ -34,25 +34,15 @@ $ dotnet add src/rest-schema-demo.csproj reference rest-schema-aspnet/src/rest-s
 $ code .
 ```
 
-In the project's `Startup` class, change the MVC Controllers configuration to include the schema filters and the JSON serialization options.
+In the project's `Startup` class, change the MVC Controllers configuration replacing `AddControllers` with `AddSchemaControllers`.
 
 ```csharp
 public void ConfigureServices( IServiceCollection services )
 {
-    services.AddControllers( options =>
-    {
-        options.Filters.AddRestSchemaFilters();
-    })
-    .AddJsonOptions( options =>
-    {
-        options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-        options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
-    } );
+    services.AddSchemaControllers();
     ...
 }
 ```
-
-The `DictionaryKeyPolicy` is important and should match the `PropertyNamingPolicy`. By default, `DictionaryKeyPolicy` is null and that can lead to mixed naming strategies in the results.
 
 ## Schema-Include
 
