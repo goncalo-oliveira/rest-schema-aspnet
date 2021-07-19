@@ -5,10 +5,10 @@
     <RootNamespace>RestSchema</RootNamespace>
     <AssemblyName>rest-schema</AssemblyName>
     <PackageId>RestSchema</PackageId>
-    <Version>0.1</Version>
+    <Version>0.1-preview-1</Version>
     <Authors>Goncalo Oliveira</Authors>
     <Description>RESTful Schema Extensions for ASP.NET</Description>
-    <RepositoryUrl>https://github.com/...</RepositoryUrl>
+    <RepositoryUrl>https://github.com/goncalo-oliveira/rest-schema-aspnet</RepositoryUrl>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
   </PropertyGroup>
 
