@@ -17,21 +17,17 @@ Future Spec Features:
 
 ## Getting Started
 
-Create a new ASP.NET project and initialize the git repository. Then, checkout this repository as a submodule.
+The fastest way is to add the NuGet package to your ASP.NET project.
 
 ```shell
-$ mkdir rest-schema-demo
-$ cd rest-schema-demo
-$ dotnet new webapi -o src --name rest-schema-demo
-$ git init
-$ git submodule add git@github.com:goncalo-oliveira/rest-schema-aspnet.git
+$ dotnet add package RestSchema --version 0.1.0-preview-1
 ```
 
-Add a reference on the project and fire up VS Code or any other IDE you prefer.
+Alternatively, you can checkout this repository as a submodule and then add a reference to the project.
 
 ```shell
-$ dotnet add src/rest-schema-demo.csproj reference rest-schema-aspnet/src/rest-schema-aspnet.csproj
-$ code .
+$ git submodule add git@github.com:goncalo-oliveira/rest-schema-aspnet.git
+$ dotnet add reference rest-schema-aspnet/src/rest-schema-aspnet.csproj
 ```
 
 In the project's `Startup` class, change the MVC Controllers configuration replacing `AddControllers` with `AddSchemaControllers`.
