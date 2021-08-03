@@ -7,6 +7,6 @@ namespace RestSchema
     /// </summary>
     internal static class SchemaVersion
     {
-        public static readonly Version Value = new Version( 0, 1 );
+        public static readonly Version Value = new Version( 0, 2 );
     }
 }

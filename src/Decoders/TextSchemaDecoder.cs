@@ -1,46 +1,56 @@
 using System;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace RestSchema.Decoders
 {
     /// <summary>
     /// Plain-Text Schema decoder
     /// </summary>
-    internal sealed class TextSchemaDecoder : ISchemaDecoder
+    public sealed class TextSchemaDecoder : ISchemaDecoder
     {
+        private const string regex = @"^([a-zA-Z0-9_.]+)+\[([a-zA-Z0-9_]+)(\,[a-zA-Z0-9_]+)*\](\,*([a-zA-Z0-9_.]+)+\[([a-zA-Z0-9_]+)(\,[a-zA-Z0-9_]+)*\])*$";
+        
+
         public Schema Decode( string text )
         {
+            text = text.Replace( '(', '[' )
+                .Replace( ')', ']' );
+
+            // validate expression
+            if ( !Regex.IsMatch( text, regex ) )
+            {
+                return Schema.Empty;
+            }
+
             var schema = new Schema
             {
+                Version = SchemaVersion.Value.ToString(),
                 Spec = new SchemaSpec()
             };
 
-            // split schemas
-            var items = text.Split( ';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries );
+            // parse expression
+            var idx = 0;
+            var schemaStartIdx = 0;
+            var schemaEndIdx = 0;
 
-            foreach ( var item in items )
+            var name = string.Empty;
+            var values = Array.Empty<string>();
+
+            while ( idx < text.Length )
             {
-                var values = item;
-                var name = "_";
+                schemaStartIdx = text.IndexOf( '[', idx );
+                schemaEndIdx = text.IndexOf( ']', schemaStartIdx );
 
-                if ( values.Contains( '=' ) )
-                {
-                    var idx = values.IndexOf( '=' );
-                    name = values.Substring( 0, idx );
-                    values = values.Substring( idx + 1 );
-                }
-                else if ( schema.Spec.Any() )
-                {
-                    //throw new ArgumentException( "Invalid schema spec!" );
-                    // TODO: log error
-                    return Schema.Empty;
-                }
+                name = text.Substring( idx, schemaStartIdx - idx );
+                values = text.Substring( schemaStartIdx + 1, schemaEndIdx - schemaStartIdx - 1 )
+                    .Split( ',' );
 
-                var properties = values.TrimEnd( ';' )
-                    .Split( ',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries );
+                idx = schemaEndIdx + 2;
 
-                schema.Spec.Add( name, properties );
+                schema.Spec.Add( name, values );
             }
+
             //
 
             return ( schema );

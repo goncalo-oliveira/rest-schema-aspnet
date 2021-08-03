@@ -6,9 +6,6 @@ namespace RestSchema
     {
         public const string SchemaMapping = "X-Schema-Map";
         public const string SchemaInclude = "X-Schema-Include";
-
-        // FUTURE spec
-        //public const string SchemaFilter = "X-Schema-Filter";
         public const string SchemaVersion = "X-Schema-Version";
     }
 }

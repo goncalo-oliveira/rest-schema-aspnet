@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Http;
 using RestSchema;
 using RestSchema.Decoders;
 
-namespace Microsoft.AspNetCore.Mvc
+namespace RestSchema.Mvc
 {
     /// <summary>
     /// Schema extensions for HttpRequest

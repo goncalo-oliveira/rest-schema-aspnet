@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Filters;
+using RestSchema.Mvc.Filters;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -12,8 +13,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>An IEnumerable<Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata> representing the added types</returns>
         public static IEnumerable<IFilterMetadata> AddRestSchemaFilters( this FilterCollection filters )
         {
-            var resourceMetadata = filters.Add<RestSchema.Http.SchemaResourceFilter>();
-            var resultMetadata = filters.Add<RestSchema.Http.AsyncSchemaResultFilter>();
+            var resourceMetadata = filters.Add<SchemaResourceFilter>();
+            var resultMetadata = filters.Add<SchemaMapResultFilter>();
 
             return ( new IFilterMetadata[]
             {

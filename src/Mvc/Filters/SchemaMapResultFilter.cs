@@ -9,9 +9,9 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace RestSchema.Http
+namespace RestSchema.Mvc.Filters
 {
-    internal sealed class AsyncSchemaResultFilter : IAsyncResultFilter
+    internal sealed class SchemaMapResultFilter : IAsyncResultFilter
     {
         public async Task OnResultExecutionAsync( ResultExecutingContext context, ResultExecutionDelegate next )
         {
@@ -36,6 +36,23 @@ namespace RestSchema.Http
             if ( schemaMapping == null )
             {
                 // no available schema... do nothing...
+                await next();
+
+                return;
+            }
+
+            // lookup for ignore attribute
+            var attr = context.Controller.GetType()
+                .GetCustomAttributes( typeof( SchemaIgnoreAttribute ), true )
+                .SingleOrDefault();
+
+            // TODO: lookup method ignore attribute
+            // TODO: improve custom attributes
+            // https://stackoverflow.com/questions/31874733/how-to-read-action-methods-attributes-in-asp-net-core-mvc
+
+            if ( attr != null )
+            {
+                // explicit ignore schema
                 await next();
 
                 return;

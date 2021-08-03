@@ -4,10 +4,7 @@ namespace RestSchema
 {
     public static class SchemaQueryKeys
     {
-        public const string SchemaMapping = "schemaMap";
-        public const string SchemaInclude = "schemaInclude";
-
-        // FUTURE spec
-        //public const string SchemaFilter = "schemaFilter";
+        public const string SchemaMapping = "_map";
+        public const string SchemaInclude = "_include";
     }
 }

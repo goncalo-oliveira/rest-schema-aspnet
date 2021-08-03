@@ -2,7 +2,7 @@ using System;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace RestSchema.Http
+namespace RestSchema.Mvc.Filters
 {
     internal sealed class SchemaResourceFilter : IResourceFilter
     {

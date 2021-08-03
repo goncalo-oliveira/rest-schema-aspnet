@@ -5,9 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
-    // TODO: Not yet implemented. This will replace the filter extensions and manually
-    //       setting json options (if using default json serializer) in the startup
-
     /// <summary>
     /// Extension methods for setting up MVC services with RestSchema middleware in an IServiceCollection
     /// </summary>
