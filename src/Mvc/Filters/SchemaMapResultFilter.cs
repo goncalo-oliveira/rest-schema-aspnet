@@ -13,49 +13,36 @@ namespace RestSchema.Mvc.Filters
 {
     internal sealed class SchemaMapResultFilter : IAsyncResultFilter
     {
-        public async Task OnResultExecutionAsync( ResultExecutingContext context, ResultExecutionDelegate next )
+        public Task OnResultExecutionAsync( ResultExecutingContext context, ResultExecutionDelegate next )
         {
             if ( !( context.Result is ObjectResult result ) )
             {
-                await next();
-
-                return;
+                return next();
             }
 
             var value = result.Value;
 
             if ( value == null )
             {
-                await next();
-
-                return;
+                return next();
             }
 
             var schemaMapping = context.HttpContext.Request.GetSchema( SchemaHeaders.SchemaMapping );
 
             if ( schemaMapping == null )
             {
-                // no available schema... do nothing...
-                await next();
-
-                return;
+                // no available schema...execute the filtering separately
+                return OnFilterExecutionAsync( context, next );
             }
 
             // lookup for ignore attribute
-            var attr = context.Controller.GetType()
-                .GetCustomAttributes( typeof( SchemaIgnoreAttribute ), true )
-                .SingleOrDefault();
+            var ignoreSchema = context.ActionDescriptor.EndpointMetadata.OfType<SchemaIgnoreAttribute>()
+                .Any();
 
-            // TODO: lookup method ignore attribute
-            // TODO: improve custom attributes
-            // https://stackoverflow.com/questions/31874733/how-to-read-action-methods-attributes-in-asp-net-core-mvc
-
-            if ( attr != null )
+            if ( ignoreSchema )
             {
                 // explicit ignore schema
-                await next();
-
-                return;
+                return next();
             }
 
             var chrono = System.Diagnostics.Stopwatch.StartNew();
@@ -73,7 +60,9 @@ namespace RestSchema.Mvc.Filters
                     list.Add( dict );
                 }
 
-                result.Value = list.ToArray();
+                var filtered = ApplySchemaFilters( schemaMapping, list );
+
+                result.Value = filtered.ToArray();
             }
             else
             {
@@ -92,13 +81,75 @@ namespace RestSchema.Mvc.Filters
             context.HttpContext.Response.Headers.Add( SchemaHeaders.SchemaVersion
                 , SchemaVersion.Value.ToString() );
 
-            await next();
+            return next();
+        }
+
+        private Task OnFilterExecutionAsync( ResultExecutingContext context, ResultExecutionDelegate next )
+        {
+            var queryFilters = context.HttpContext.Request.GetQueryFilters();
+
+            if ( !( queryFilters?.Any() == true ) )
+            {
+                return next();
+            }
+
+            // lookup for ignore attribute
+            var ignoreSchema = context.ActionDescriptor.EndpointMetadata.OfType<SchemaIgnoreAttribute>()
+                .Any();
+
+            if ( ignoreSchema )
+            {
+                // explicit ignore schema
+                return next();
+            }
+
+            var result = (ObjectResult)context.Result;
+            var value = result.Value;
+
+            // single object or enumerable?
+            if ( typeof( IEnumerable ).IsAssignableFrom( value.GetType() ) )
+            {
+                var chrono = System.Diagnostics.Stopwatch.StartNew();
+
+                // an enumerable...
+                var list = new System.Collections.Generic.List<object>();
+
+                foreach ( var item in (IEnumerable)value )
+                {
+                    var dict = new Microsoft.AspNetCore.Routing.RouteValueDictionary( item )
+                        .ToDictionary( x => x.Key, x => x.Value, StringComparer.OrdinalIgnoreCase );
+
+                    list.Add( dict );
+                }
+
+                // we need to build a schema based on the result
+                var schemaMapping = new Schema
+                {
+                    Spec = new SchemaSpec(),
+                    Filters = queryFilters
+                };
+
+                GenerateSchemaSpec( schemaMapping.Spec, "_", ((IEnumerable)value).GetFirstElement() );
+
+                var filtered = ApplySchemaFilters( schemaMapping, list );
+
+                result.Value = filtered.ToArray();
+
+                chrono.Stop();
+
+                // add Schema headers
+                context.HttpContext.Response.Headers.Add( SchemaHeaders.SchemaMapping + "-Duration"
+                    , chrono.Elapsed.TotalMilliseconds.ToString() + "ms" );
+
+                context.HttpContext.Response.Headers.Add( SchemaHeaders.SchemaVersion
+                    , SchemaVersion.Value.ToString() );
+            }
+
+            return next();
         }
 
         private Dictionary<string, object> ApplySchemaMapping( Schema schemaMapping, object item )
-        {
-            return ApplySchemaMapping( schemaMapping, schemaMapping.Spec.Root().Key, item );
-        }
+            => ApplySchemaMapping( schemaMapping, schemaMapping.Spec.Root().Key, item );
 
         private Dictionary<string, object> ApplySchemaMapping( Schema schemaMapping, string schemaName, object item )
         {
@@ -106,7 +157,7 @@ namespace RestSchema.Mvc.Filters
 
             // select only properties that are in the schema
             var selected = dict.Where( x => schemaMapping.Spec.ContainsProperty( schemaName, x.Key ) )
-                .ToDictionary( x => x.Key, x => x.Value );
+                .ToDictionary( x => x.Key, x => x.Value, StringComparer.OrdinalIgnoreCase );
 
             // look for additional schema mappings for property values
             var additionalMappings = selected.Where( x => schemaMapping.Spec.ContainsKey( x.Key ) 
@@ -130,5 +181,51 @@ namespace RestSchema.Mvc.Filters
             return ( selected );
         }
 
+        private IEnumerable<object> ApplySchemaFilters( Schema schemaMapping, IEnumerable<object> items )
+            => ApplySchemaFilters( schemaMapping, schemaMapping.Spec.Root().Key, items );
+
+        private IEnumerable<object> ApplySchemaFilters( Schema schemaMapping, string schemaName, IEnumerable<object> items )
+        {
+            var filters = SchemaFilterCollection.Create( schemaMapping.Filters );
+
+            if ( !filters.Any() )
+            {
+                // no filters
+                return ( items );
+            }
+
+
+            var list = items.Cast<Dictionary<string, object>>();
+
+            if ( list == null )
+            {
+                return ( items );
+            }
+
+            var filtered = list.Where( item =>
+            {
+                var selectedFilters = item.Keys.Select( x => filters.GetFilter( x ) )
+                    .Where( x => x != null )
+                    .ToArray();
+
+                return selectedFilters.Select( x => x.IsMatch( item[x.Key] ) )
+                    .All( x => x == true );
+            } );
+
+            return ( filtered );
+        }
+
+        private void GenerateSchemaSpec( SchemaSpec spec, string schemaName, object item )
+        {
+            var type = item.GetType();
+
+            var schema = type.GetProperties()
+                .Select( x => x.Name )
+                .ToArray();
+
+            spec.Add( schemaName, schema );
+
+            // TODO: dig deeper
+        }
     }
 }

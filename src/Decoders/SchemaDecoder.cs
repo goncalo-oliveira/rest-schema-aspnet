@@ -11,14 +11,14 @@ namespace RestSchema.Decoders
         public static Schema Decode( string raw )
         {
             // plain-text format (doesn't use encoding)
-            if ( raw.Contains( ',' ) || raw.Contains( ';' ) )
+            if ( raw.Contains( ',' ) || raw.Contains( '[' ) )
             {
                 return textDecoder.Decode( raw );
             }
 
             var base64 = FromBase64Url( raw ); // ensure we have a base64 and not a base64url
             var buffer = new Span<byte>( new byte[raw.Length] );
-            if ( !Convert.TryFromBase64String( raw, buffer, out int bytesWritten ) )
+            if ( !Convert.TryFromBase64String( base64, buffer, out int bytesWritten ) )
             {
                 // not a valid base64 value, it's most likely plain-text format
                 return textDecoder.Decode( base64 );

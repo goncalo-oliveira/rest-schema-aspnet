@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace RestSchema
 {
@@ -25,6 +26,8 @@ namespace RestSchema
         /// </summary>
         /// <value></value>
         public SchemaSpec Spec { get; set; }
+
+        public Dictionary<string, string> Filters { get; set; }
 
         // FUTURE spec
         //public Dictionary Refs { get; set; }
