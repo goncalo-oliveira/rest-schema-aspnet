@@ -5,7 +5,7 @@
     <RootNamespace>RestSchema</RootNamespace>
     <AssemblyName>rest-schema</AssemblyName>
     <PackageId>RestSchema</PackageId>
-    <Version>0.1-preview-1</Version>
+    <Version>0.2-preview-1</Version>
     <Authors>Goncalo Oliveira</Authors>
     <Description>RESTful Schema Extensions for ASP.NET</Description>
     <RepositoryUrl>https://github.com/goncalo-oliveira/rest-schema-aspnet</RepositoryUrl>
@@ -13,7 +13,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="5.0.0" />
