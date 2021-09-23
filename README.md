@@ -1,6 +1,6 @@
 # RESTful Schema Extensions for ASP.NET
 
-An ASP.NET implementation for the [REST Schema](https://github.com/goncalo-oliveira/rest-schema-spec) Spec. This is still a work in progress and it currently implements v0.1 of the spec.
+An ASP.NET implementation for the [REST Schema](https://github.com/goncalo-oliveira/rest-schema-spec) Spec. This is still a work in progress and it currently implements v0.2 of the spec.
 
 Features:
 - [x] Schema-Mapping 
@@ -8,19 +8,15 @@ Features:
 - [x] Headers
 - [x] Query string parameters
 - [x] JSON schema
-- [ ] YAML schema
 - [x] Plain text schema
-
-Future Spec Features:
-- [ ] Schema filters (v0.2?)
-- [ ] Schema references (v0.2?)
+- [x] Schema filters
 
 ## Getting Started
 
 The fastest way is to add the NuGet package to your ASP.NET project.
 
 ```shell
-$ dotnet add package RestSchema --version 0.1.0-preview-1
+$ dotnet add package RestSchema --version 0.2.0-preview-1
 ```
 
 Alternatively, you can checkout this repository as a submodule and then add a reference to the project.
